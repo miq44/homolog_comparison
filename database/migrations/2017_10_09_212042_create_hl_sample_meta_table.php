@@ -18,7 +18,7 @@ class CreateHlSampleMetaTable extends Migration
             $table->integer('sample_number');
             $table->integer('number_of_control_replicate');
             $table->integer('number_of_condition_replicate');
-            $table->string('data_table_name',250);
+            $table->integer('data_table_id');
             $table->timestamps();
         });
     }
