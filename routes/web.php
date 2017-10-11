@@ -11,6 +11,5 @@
 |
 */
 
-Route::get('/', function () {
-    return view('layout.test');
-});
+Route::get('/', 'HomologComparisonController@getHomePage');
+Route::post('/compare', 'HomologComparisonController@postOrganismNames');

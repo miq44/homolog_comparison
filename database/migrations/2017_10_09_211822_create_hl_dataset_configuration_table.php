@@ -14,7 +14,8 @@ class CreateHlDatasetConfigurationTable extends Migration
     public function up()
     {
         Schema::create('hl_dataset_configurations', function (Blueprint $table) {
-            $table->string('generated_data_table_name', 254)->primary();
+            $table->increments('id');
+            $table->string('generated_data_table_name', 254)->unique();
             $table->string('dataset_name', 200);
             $table->integer('number_of_samples');
             $table->integer('experiment_type');
