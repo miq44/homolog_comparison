@@ -90,7 +90,10 @@
 
             </div><!-- /.box-header -->
             <div class="box-body">
-                <div class="row" id="scatter_plot_with_exp" style="height: 500px;">
+                <div class="row" id="loading">
+                    <img src="{{asset('images/loading.gif')}}" style="height: 500px;width: 100%;">
+                </div>
+                <div class="row" id="scatter_plot_with_exp" style="height: 500px; display: none;">
 
                 </div>
             </div>
@@ -153,7 +156,8 @@
                    secondOrgExp
                ],
                done:function () {
-                   alert('Hello world');
+                   $('#loading').hide();
+                   $('#scatter_plot_with_exp').show();
                }
            });
         });
