@@ -90,7 +90,7 @@
 
             </div><!-- /.box-header -->
             <div class="box-body">
-                <div class="row" id="scatter_plot_with_exp">
+                <div class="row" id="scatter_plot_with_exp" style="height: 500px;">
 
                 </div>
             </div>
@@ -121,10 +121,39 @@
            var scatterChart = c3.generate({
                bindto:'#scatter_plot_with_exp',
                data: {
+                   xs:{
+                     'Maize':'Arabidopsis',
+                   },
                    columns: [
-                       firstOrgExp,
-                       secondOrgExp
-                   ]
+
+                   ],
+                   type:'scatter'
+               },
+               axis: {
+                   y: {
+                       max: 400,
+                       min: 0,
+                       // Range includes padding, set 0 if no padding needed
+                       // padding: {top:0, bottom:0}
+                   },
+                   X:{
+                       tick:{
+                           type:'category',
+                           culling: {
+                               max: 50 // the number of tick texts will be adjusted to less than this value
+                           }
+                       }
+                   }
+               }
+           });
+
+           scatterChart.load({
+               columns:[
+                   firstOrgExp,
+                   secondOrgExp
+               ],
+               done:function () {
+                   alert('Hello world');
                }
            });
         });
