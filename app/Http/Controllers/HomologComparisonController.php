@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Core\Service\HomologComparisonService;
 use Illuminate\Http\Request;
+use Session;
 
 
 class HomologComparisonController extends Controller
@@ -20,8 +21,10 @@ class HomologComparisonController extends Controller
     }
 
     public function postOrganismNames(Request $request){
-        $firstOrganism = $request->org_1;
-        $secondOrganism = $request->org_2;
-        $data = $this->homologCompariosnService->getExpressionValueForBothOrganism($firstOrganism,$secondOrganism);
+        $firstOrganismTableId = $request->org_t_id_1;
+        $secondOrganismTableId = $request->org_t_id_2;
+        $data = $this->homologCompariosnService->getExpressionValueForBothOrganism($firstOrganismTableId,$secondOrganismTableId);
+        Session::put('exp_data',$data);
+        return redirect()->back()->withInput();
     }
 }
