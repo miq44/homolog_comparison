@@ -36,11 +36,19 @@ class HomologComparisonService
     {
 
         $config = $this->getDataSetConfiguration($tId1, $tId2);
+        $orgName[0]=$config['org_name'][$tId1];
+        $orgName[1] =$config['org_name'][$tId2];
         $tableConfig = $config['table_config'];
         $homologRelationTableName = $this->getHomologRelationshipTable($config['org_id']);
+
         $relationData = $this->getRelationData($homologRelationTableName, $tableConfig);
         $organismData = $this->getOrganismData($tableConfig);
-        $data = $this->getData($relationData,$organismData);
+        $reverOrderStatus = false;
+        if($tId1>$tId2){
+            $reverOrderStatus = true;
+        }
+        $data = $this->getData($relationData,$organismData,$reverOrderStatus);
+        $data['org_name']=$orgName;
         return json_encode($data) ;
 
 //        if(is_array($columns)){
@@ -69,10 +77,11 @@ class HomologComparisonService
             }
             $array[] = $row;
         }
-        dd($array);
+       // dd($array);
     }
 
-    private function getData($relationData,$organismData){
+    private function getData($relationData,$organismData,$reverseOrderStatus){
+
         $orgs =[];
         $columns = [];
         foreach ($organismData as $key=>$table){
@@ -100,19 +109,26 @@ class HomologComparisonService
             $geneId1 = strtoupper($relation->gene_id_1);
             $geneId2 =strtoupper($relation->gene_id_2);
             $row=[];
-            if(isset($orgs[0][$geneId1]) && isset($orgs[1][$geneId2])){
-                $exp['gene_id_1'][] = $geneId1;
-                $exp['gene_id_2'][] = $geneId2;
-                foreach ($orgs[0][$geneId1] as $key2=>$value2){
-                    $exp['1_'.$key2][]=$value2;
+            if((isset($orgs[0][$geneId1]) && isset($orgs[1][$geneId2])) || (isset($orgs[0][$geneId2]) && isset($orgs[1][$geneId1])) ){
+                if(!$reverseOrderStatus){
+                    $exp['gene_id_1'][] = $geneId1;
+                    $exp['gene_id_2'][] = $geneId2;
+                    foreach ($orgs[0][$geneId1] as $key2=>$value2){
+                        $exp['1_'.$key2][]=$value2;
+                    }
+                    foreach ($orgs[1][$geneId2] as $key2=>$value2){
+                        $exp['2_'.$key2][]=$value2;
+                    }
+                }else{
+                    $exp['gene_id_1'][] = $geneId2;
+                    $exp['gene_id_2'][] = $geneId1;
+                    foreach ($orgs[0][$geneId2] as $key2=>$value2){
+                        $exp['1_'.$key2][]=$value2;
+                    }
+                    foreach ($orgs[1][$geneId1] as $key2=>$value2){
+                        $exp['2_'.$key2][]=$value2;
+                    }
                 }
-                foreach ($orgs[1][$geneId2] as $key2=>$value2){
-                    $exp['2_'.$key2][]=$value2;
-                }
-//                $row[0][$geneId1] = $orgs[0][$geneId1] ;
-//                $row[1][$geneId2] = $orgs[1][$geneId2] ;
-                //dd($orgs[0][$geneId1]);
-               // $exp[]=$row;
             }
 
         }
@@ -182,6 +198,11 @@ class HomologComparisonService
 
     private function getDataSetConfiguration($tId1, $tId2)
     {
+        if($tId2>$tId1){
+            $status = 'ASC';
+        }else{
+            $status = 'DESC';
+        }
         $tables = "(" . $tId1 . "," . $tId2 . ")";
         $query = "SELECT 
                         mi.sample_number AS sample_id,
@@ -198,7 +219,8 @@ class HomologComparisonService
                     WHERE
                         mi.data_table_id = dc.id
                             AND dc.organism_id = org.id 
-                            AND dc.id in " . $tables;
+                            AND dc.id in " . $tables.
+                    " ORDER BY dc.id ".$status;
         $resultObj = DB::select(DB::raw($query));
         $array = $this->convertConfObjIntoArray($resultObj);
         return $array;
@@ -209,16 +231,20 @@ class HomologComparisonService
     {
         $array = [];
         $orgId = [];
+        $orgName =[];
         foreach ($objects as $key => $obj) {
             $array[$obj->t_name][$obj->sample_id]['control'] = $obj->no_of_control;
             $array[$obj->t_name][$obj->sample_id]['condition'] = $obj->no_of_condition;
+
             if (!in_array($obj->org_id, $orgId)) {
                 $orgId[] = $obj->org_id;
             }
+            $orgName[$obj->t_id] = $obj->organism_name;
 
         }
         $result['table_config'] = $array;
         $result['org_id'] = $orgId;
+        $result['org_name'] = $orgName;
         return $result;
     }
 }
